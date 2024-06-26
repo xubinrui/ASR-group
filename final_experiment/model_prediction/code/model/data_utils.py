@@ -48,47 +48,59 @@ EMOTIONS = {
     'surprise': 5
 }
 
-# data_list = []
+def process_audio_files(DATA_PATH, target_length=150, test_size=0.25, random_state=42):
+    data_list = []
 
-# for dirname, _, filenames in os.walk(DATA_PATH):
-#     for filename in filenames:
-#         file_path = os.path.join(dirname, filename)
-#         identifiers = filename.split('.')[0].split('-')
+    for dirname, _, filenames in os.walk(DATA_PATH):
+        for filename in filenames:
+            file_path = os.path.join(dirname, filename)
+            identifiers = filename.split('.')[0].split('-')
 
-#         emotion = EMOTIONS.get(identifiers[1])  # 使用get方法以防万一有未知的标签
-#         feature, sr = get_spectrogram(file_path)
+            emotion = EMOTIONS.get(identifiers[1], -1)  # 使用get方法以防万一有未知的标签
+            if emotion != -1:
+                feature, sr = get_spectrogram(file_path)
 
-#         # 将提取的信息作为字典添加到data_list列表中
-#         data_list.append({
-#             "Emotion": emotion,
-#             "Path": file_path,
-#             "Feature": feature,
-#             "SampleRate": sr
-#         })
+                # 将提取的信息作为字典添加到data_list列表中
+                data_list.append({
+                    "Emotion": emotion,
+                    "Path": file_path,
+                    "Feature": feature,
+                    "SampleRate": sr
+                })
 
-# # 如果需要将数据保存到DataFrame
-# data = pd.DataFrame(data_list)
+    # 将data_list转换为DataFrame
+    data = pd.DataFrame(data_list)
 
-# # 找到形状最大的频谱图
-# max_shape = max(data['feature'], key=lambda x: x.shape[1]).shape
+    # 找到形状最大的频谱图
+    max_shape = max(data['Feature'], key=lambda x: x.shape[1]).shape
 
-# # 填充其他频谱图以匹配最大形状
-# padded_features = [np.pad(feature, pad_width=((0, 0), (0, max_shape[1] - feature.shape[1])), mode='constant', constant_values=0) for feature in data['feature']]
+    # 填充或截断频谱图以匹配目标长度
+    padded_features = []
+    for feature in data['Feature']:
+        if feature.shape[1] > target_length:
+            # 截断长的频谱图
+            padded_feature = feature[:, :target_length]
+        else:
+            # 填充短的频谱图
+            padded_feature = np.pad(feature, pad_width=((0, 0), (0, target_length - feature.shape[1])), mode='constant', constant_values=0)
+        padded_features.append(padded_feature)
 
-# # 将填充后的频谱图作为特征
-# X = np.array(padded_features)
+    # 将填充后的频谱图作为特征
+    X = np.array(padded_features)
 
-# # 将情绪标签作为目标
-# y = np.array(data['Emotion'].tolist())
+    # 将情绪标签作为目标
+    y = np.array(data['Emotion'].tolist())
 
-# # 分割数据集
-# X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25, random_state=42)
+    X = np.expand_dims(X, axis=-1)
 
-# # 检查分割后的数据形状
-# print("X_train shape:", X_train.shape)
-# print("X_test shape:", X_test.shape)
-# print("y_train shape:", y_train.shape)
-# print("y_test shape:", y_test.shape)
+    # 分割数据集
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_size, random_state=random_state)
+
+    return X_train, X_test, y_train, y_test
+
+# 调用函数并进行数据处理
+X_train, X_test, y_train, y_test = process_audio_files(DATA_PATH)
+
 
 #提取所有输入文件的特征
 def co_input_feature():
@@ -98,6 +110,15 @@ def co_input_feature():
        for filename in filenames:
         file_path = os.path.join(dirname, filename)
         feature,_=get_spectrogram(file_path)
-        x.append(feature)
+        feature = np.array(feature)
+        if feature.shape[1] > 150:
+            padded_feature = feature[:, :150]
+        else:
+            padded_feature = np.pad(feature, pad_width=((0, 0), (0, 150 - feature.shape[1])), mode='constant', constant_values=0)
+        padded_feature = np.expand_dims(padded_feature, axis=-1)
+        X = np.expand_dims(padded_feature, axis=0)
+        # print(X.shape)
+        x.append(X)
+        
     return x
-
+# feature=co_input_feature()

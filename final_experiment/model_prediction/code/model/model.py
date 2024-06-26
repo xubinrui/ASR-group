@@ -16,8 +16,8 @@ from tensorflow.keras import backend as K
 from tensorflow.keras.optimizers import Adam
 # from model_prediction.code.model.data_utils import X_test,X_train,y_test,y_train
 
-# 定义注意力机制层
-class Attention(tf.keras.Model):
+# 定义自定义层Attention
+class Attention(tf.keras.layers.Layer):
     def __init__(self, units):
         super(Attention, self).__init__()
         self.units = units
@@ -33,14 +33,14 @@ class Attention(tf.keras.Model):
         context_vector = tf.reduce_sum(context_vector, axis=1)
 
         return context_vector, attention_weights
-
+  
     def get_config(self):
         return {'units': self.units}
 
     @classmethod
     def from_config(cls, config):
-        config.pop('time_major', None)  # 移除无效参数
         return cls(**config)
+
 
 
 # 定义模型
@@ -51,9 +51,11 @@ def create_model(input_shape, num_classes):
     x = Conv2D(64, kernel_size=(3, 5), strides=(1, 1), padding='same', activation='relu')(x)
     x = MaxPooling2D(pool_size=(2, 2))(x)
     x = Reshape((-1, x.shape[-1]*x.shape[-2]))(x)
+    # 修改注意力机制调用
     x = GRU(64, return_sequences=True)(x)
-    x, _ = Attention(64)(x, x[:, -1, :])
-    x = Dense(128, activation='relu')(x)
+    context_vector, _ = Attention(64)(x, x[:, -1, :])
+    x = Dense(128, activation='relu')(context_vector)
+
     outputs = Dense(num_classes, activation='softmax')(x)
 
     model = Model(inputs=inputs, outputs=outputs)
@@ -67,3 +69,6 @@ def create_model(input_shape, num_classes):
 
 # # 训练模型
 # model.fit(X_train, y_train, validation_data=(X_test, y_test), epochs=15, batch_size=32)
+
+# # 保存模型
+# model.save("trained_model1.h5")
