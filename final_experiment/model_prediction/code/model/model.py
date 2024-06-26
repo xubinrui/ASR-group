@@ -14,12 +14,13 @@ from tensorflow.keras.layers import Input, Dense, Conv2D, MaxPooling2D, Reshape,
 from tensorflow.keras.layers import Flatten, Dropout, BatchNormalization
 from tensorflow.keras import backend as K
 from tensorflow.keras.optimizers import Adam
-from model_prediction.code.model.data_utils import X_test,X_train,y_test,y_train
+# from model_prediction.code.model.data_utils import X_test,X_train,y_test,y_train
 
 # 定义注意力机制层
 class Attention(tf.keras.Model):
     def __init__(self, units):
         super(Attention, self).__init__()
+        self.units = units
         self.W1 = tf.keras.layers.Dense(units)
         self.W2 = tf.keras.layers.Dense(units)
         self.V = tf.keras.layers.Dense(1)
@@ -32,6 +33,15 @@ class Attention(tf.keras.Model):
         context_vector = tf.reduce_sum(context_vector, axis=1)
 
         return context_vector, attention_weights
+
+    def get_config(self):
+        return {'units': self.units}
+
+    @classmethod
+    def from_config(cls, config):
+        config.pop('time_major', None)  # 移除无效参数
+        return cls(**config)
+
 
 # 定义模型
 def create_model(input_shape, num_classes):
@@ -49,11 +59,11 @@ def create_model(input_shape, num_classes):
     model = Model(inputs=inputs, outputs=outputs)
     return model
 
-# 创建模型
-model = create_model((1025, 213, 1), num_classes=6)  
+# # 创建模型
+# model = create_model((1025, 213, 1), num_classes=6)  
 
-#optimizer = Adam(learning_rate=0.005)
-model.compile(loss='sparse_categorical_crossentropy',metrics=['accuracy'])
+# #optimizer = Adam(learning_rate=0.005)
+# model.compile(loss='sparse_categorical_crossentropy',metrics=['accuracy'])
 
-# 训练模型
-model.fit(X_train, y_train, validation_data=(X_test, y_test), epochs=15, batch_size=32)
+# # 训练模型
+# model.fit(X_train, y_train, validation_data=(X_test, y_test), epochs=15, batch_size=32)

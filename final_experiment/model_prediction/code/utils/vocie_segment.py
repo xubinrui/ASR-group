@@ -67,13 +67,7 @@ def findSegment(express):
 
 # 使用能熵比检测有声段
 def pitch_vad(x, wnd, inc, T1, miniL=10):
-    """
-    :param x: 语音信号
-    :param wnd: 窗函数或窗长
-    :param inc: 帧移
-    :param T1: 端点检测阈值
-    :param miniL: 语音段最小帧数
-    """
+
     y = enframe(x, wnd, inc)    # 语音分帧
     fn = y.shape[0]
     if isinstance(wnd, int):    # 判断是wnd是窗函数还是窗长，并以此设定窗长
@@ -104,11 +98,6 @@ def pitch_vad(x, wnd, inc, T1, miniL=10):
 #计算所有语音的有声段并进行分段
 def co_voiceseg(wavefile,wlen = 6000,inc = 80,T1 = 0.05 ):
 
-    '''
-    wlen 分析窗口长度
-    inc 连续窗口间隔
-    T1 用于基音校正的阈值
-    '''
     # 读取WAV文件
     (fs, data) = wavfile.read(wavefile)
     print(fs,len(data))

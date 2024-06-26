@@ -7,9 +7,8 @@
 
 负责人：崔彣婧
 '''
-
-
-from joblib import load
+from tensorflow.keras.models import load_model
+from .model import Attention
 from .data_utils import co_input_feature
 import os
 
@@ -24,7 +23,12 @@ def predict_emotion():
     }
     def predict(model_path):
         # 加载模型
-        loaded_model = load(model_path)
+        
+
+    # 返回一个编译好的模型
+    # 与保存模型相同的配置
+        loaded_model = load_model(model_path, custom_objects={'Attention': Attention})
+
 
         x=co_input_feature()
 
@@ -44,7 +48,7 @@ def predict_emotion():
 
         return predictions
 
-    model_path='model_prediction\mlp_model.joblib'
+    model_path='model_prediction\my_model.h5'
     predictions=predict(model_path)
     return predictions
 
