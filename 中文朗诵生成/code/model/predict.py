@@ -13,11 +13,6 @@ from joblib import load
 from data_utils import co_input_feature,extract_feature
 import os
 
-
-# x=[]
-# for filename in ['././data/CASIA/fear/203-fear-zhaoquanyin.wav']:
-#     feature=extract_feature(filename , mfcc=True, chroma=True, mel=True)
-#     x.append(feature)
 emotions={
     0: 'angry',
     1: 'fear',

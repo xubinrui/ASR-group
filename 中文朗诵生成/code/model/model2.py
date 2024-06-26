@@ -5,6 +5,7 @@ from tensorflow.keras.layers import Flatten, Dropout, BatchNormalization
 from tensorflow.keras import backend as K
 from tensorflow.keras.optimizers import Adam
 from data_utils2 import X_test,X_train,y_test,y_train
+
 # 定义注意力机制层
 class Attention(tf.keras.Model):
     def __init__(self, units):

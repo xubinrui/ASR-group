@@ -1,18 +1,27 @@
+'''
+功能：自行实现将语音音频与背景音频混合
+负责人：徐彬芮
+更新时间：2024.6.25
+
+'''
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.io import wavfile
 from scipy.signal import stft, istft, wiener
 
+# 估计噪声的功率谱
 def noise_estimation(noisy_stft, noise_frames=60):
     noise_est = np.mean(np.abs(noisy_stft[:, :noise_frames]) ** 2, axis=1)
     return noise_est
 
+# 使用谱减法增强信号
 def spectral_subtraction(noisy_stft, noise_power_spectrum, alpha=20):
     noisy_power_spectrum = np.abs(noisy_stft) ** 2
     subtracted_spectrum = noisy_power_spectrum - alpha * noise_power_spectrum[:, None]
     subtracted_spectrum[subtracted_spectrum < 0] = 0
     return np.sqrt(subtracted_spectrum) * np.exp(1j * np.angle(noisy_stft))
 
+# 对信号进行平滑处理，支持Wiener滤波和移动平均法
 def smooth_signal(signal, method='wiener', window_len=5):
     if method == 'wiener':
         return wiener(signal)
@@ -22,6 +31,7 @@ def smooth_signal(signal, method='wiener', window_len=5):
     else:
         raise ValueError("Unknown smoothing method: {}".format(method))
 
+# 将增强后的音频信号保存为输出WAV文件
 def enhance_audio(input_wav, output_wav, noise_frames=60, alpha=20, smoothing_method='wiener'):
     # 读取音频文件
     rate, noisy_signal = wavfile.read(input_wav)
@@ -51,8 +61,9 @@ def enhance_audio(input_wav, output_wav, noise_frames=60, alpha=20, smoothing_me
 
     return rate, noisy_signal, enhanced_signal
 
+
 # 使用示例
-input_wav = r'D:\语音处理\ASR\ASR-group\final_experiment\中文朗诵生成\data\demo\demo.wav'
+input_wav = 'model_prediction\data\demo.wav'
 output_wav = 'enhanced_audio.wav'
 rate, noisy_signal, enhanced_signal = enhance_audio(input_wav, output_wav)
 

@@ -1,3 +1,9 @@
+'''
+功能：运行主程序
+负责人：徐彬芮
+更新时间：2024.6.25
+
+'''
 import sys
 import os
 import time
@@ -10,7 +16,8 @@ import noisereduce as nr
 import pyaudio
 from classifier import classifier
 import wave
-from 中文朗诵生成.code.utils.record_audio import record_audio
+from model_prediction.code.utils.record_audio import record_audio
+
 
 class NewWindow(QWidget):
     def __init__(self, denoised_audio_path=''):
